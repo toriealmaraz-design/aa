@@ -12,13 +12,12 @@ import {
   TrendingUp,
   ChevronDown,
   Star,
-  Menu,
-  X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 
 export default function HowItWorks() {
-  const [menuOpen, setMenuOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   const steps = [
@@ -104,48 +103,7 @@ export default function HowItWorks() {
   return (
     <div className="min-h-screen bg-slate-950">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Zap size={18} className="text-white" fill="currentColor" />
-              </div>
-              <span className="text-xl font-bold text-white">Nexify</span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-8">
-              <Link to="/#features" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Features</Link>
-              <Link to="/how-it-works" className="text-white transition-colors text-sm font-medium">How It Works</Link>
-              <Link to="/#vendors" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">For Vendors</Link>
-              <Link to="/#pricing" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Pricing</Link>
-            </nav>
-
-            <div className="hidden md:flex items-center gap-3">
-              <Link to="/signin" className="text-slate-400 hover:text-white text-sm font-medium px-4 py-2">Log In</Link>
-              <Link to="/signup" className="btn-primary text-sm">Start Selling</Link>
-            </div>
-
-            <button className="md:hidden text-slate-400" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {menuOpen && (
-          <div className="md:hidden bg-slate-900 border-t border-slate-800 px-4 py-4">
-            <nav className="flex flex-col gap-3">
-              <Link to="/#features" className="text-slate-400 hover:text-white py-2">Features</Link>
-              <Link to="/how-it-works" className="text-white py-2">How It Works</Link>
-              <Link to="/#vendors" className="text-slate-400 hover:text-white py-2">For Vendors</Link>
-              <Link to="/#pricing" className="text-slate-400 hover:text-white py-2">Pricing</Link>
-              <hr className="border-slate-800 my-2" />
-              <Link to="/signin" className="text-left text-slate-400 hover:text-white py-2">Log In</Link>
-              <Link to="/signup" className="btn-primary justify-center mt-2">Start Selling</Link>
-            </nav>
-          </div>
-        )}
-      </header>
+      <Navbar active="how-it-works" />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -327,19 +285,7 @@ export default function HowItWorks() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Zap size={18} className="text-white" fill="currentColor" />
-              </div>
-              <span className="text-xl font-bold text-white">Nexify</span>
-            </Link>
-            <p className="text-slate-500 text-sm">© 2026 Nexify Ghana. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

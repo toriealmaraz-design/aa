@@ -15,61 +15,15 @@ import {
   Store,
   UserCheck,
   ChevronRight,
-  Menu,
-  X,
 } from 'lucide-react'
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Zap size={18} className="text-white" fill="currentColor" />
-              </div>
-              <span className="text-xl font-bold text-white">Nexify</span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Features</a>
-              <Link to="/how-it-works" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">How It Works</Link>
-              <a href="#vendors" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">For Vendors</a>
-              <a href="#pricing" className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Pricing</a>
-            </nav>
-
-            <div className="hidden md:flex items-center gap-3">
-              <Link to="/signin" className="text-slate-400 hover:text-white text-sm font-medium px-4 py-2">Sign In</Link>
-              <Link to="/signup" className="btn-primary text-sm">Get Started Free</Link>
-            </div>
-
-            <button className="md:hidden text-slate-400" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div className="md:hidden bg-slate-900 border-t border-slate-800 px-4 py-4">
-            <nav className="flex flex-col gap-3">
-              <a href="#features" className="text-slate-400 hover:text-white py-2">Features</a>
-              <Link to="/how-it-works" className="text-slate-400 hover:text-white py-2">How It Works</Link>
-              <a href="#vendors" className="text-slate-400 hover:text-white py-2">For Vendors</a>
-              <a href="#pricing" className="text-slate-400 hover:text-white py-2">Pricing</a>
-              <hr className="border-slate-800 my-2" />
-              <Link to="/signin" className="text-slate-400 hover:text-white py-2">Sign In</Link>
-              <Link to="/signup" className="btn-primary justify-center mt-2">Get Started Free</Link>
-            </nav>
-          </div>
-        )}
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -449,61 +403,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <Link to="/" className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Zap size={18} className="text-white" fill="currentColor" />
-                </div>
-                <span className="text-xl font-bold text-white">Nexify</span>
-              </Link>
-              <p className="text-slate-400 text-sm">
-                Ghana's #1 platform for buying and selling data bundles.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><Link to="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Refund Policy</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">© 2026 Nexify. All rights reserved.</p>
-            <div className="flex items-center gap-6 text-slate-500 text-sm">
-              <a href="#" className="hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="hover:text-white transition-colors">Instagram</a>
-              <a href="#" className="hover:text-white transition-colors">WhatsApp</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
