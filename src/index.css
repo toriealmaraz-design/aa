@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-slate-950 text-white antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2;
+  }
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg border border-slate-700 transition-all duration-200 inline-flex items-center gap-2;
+  }
+  .card {
+    @apply bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-white mb-4;
+  }
+  .section-subtitle {
+    @apply text-slate-400 text-lg max-w-2xl;
+  }
+}
+
+/* Inline button spinner — brand-token ring (used on async buttons) */
+.nx-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #10b981;
+  border-right-color: #3B82F6;
+  animation: nx-btn-spin 0.7s linear infinite;
+  display: inline-block;
+  flex: none;
+}
+@keyframes nx-btn-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-btn-spinner { animation-duration: 1.4s; }
+}

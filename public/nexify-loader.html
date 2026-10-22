@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexify Loader</title>
+<style>
+  :root{
+    --navy:#0F172A; --gold:#3B82F6; --gold-soft:#60a5fa; --emerald:#10b981; --cycle:1.9s;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{min-height:100%}
+  body{
+    display:grid;place-items:center;min-height:100vh;
+    background:radial-gradient(120% 120% at 50% 38%, #1E293B 0%, var(--navy) 55%, #060b16 100%);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  .scene{display:flex;flex-direction:column;align-items:center;gap:34px}
+  .mark{position:relative;width:210px;height:210px;display:grid;place-items:center}
+
+  .halo{
+    position:absolute;inset:-4%;border-radius:50%;
+    background:conic-gradient(from 0deg,
+      transparent 0deg, rgba(59,130,246,0) 170deg,
+      rgba(59,130,246,.20) 300deg, rgba(16,185,129,.38) 346deg,
+      rgba(96,165,250,.95) 360deg);
+    filter:blur(6px);
+    -webkit-mask:radial-gradient(farthest-side, transparent 61%, #000 63%, #000 77%, transparent 81%);
+            mask:radial-gradient(farthest-side, transparent 61%, #000 63%, #000 77%, transparent 81%);
+    animation:spin var(--cycle) linear infinite;opacity:.55;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .orbit{position:absolute;inset:4%;border-radius:50%;animation:spin calc(var(--cycle)*3.2) linear infinite;opacity:.55}
+  .orbit.rev{animation-direction:reverse;inset:12%}
+  .orbit span{
+    position:absolute;top:-3px;left:calc(50% - 3px);width:6px;height:6px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 6px var(--gold);
+  }
+  .orbit span:nth-child(1){transform:rotate(0deg) translateY(99px)}
+  .orbit span:nth-child(2){transform:rotate(120deg) translateY(99px);background:var(--emerald);box-shadow:0 0 6px var(--emerald)}
+  .orbit span:nth-child(3){transform:rotate(240deg) translateY(99px)}
+  .orbit.rev span{width:4px;height:4px;opacity:.6}
+  .orbit.rev span:nth-child(1){transform:rotate(60deg) translateY(76px)}
+  .orbit.rev span:nth-child(2){transform:rotate(200deg) translateY(76px)}
+
+  .glow{
+    position:absolute;width:125px;height:125px;border-radius:50%;
+    background:radial-gradient(circle, rgba(59,130,246,.12), transparent 68%);
+    animation:breathe var(--cycle) ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{transform:scale(.92);opacity:.4}50%{transform:scale(1.1);opacity:.75}}
+
+  .logo{position:relative;width:150px;height:150px;overflow:visible}
+  .logo svg{width:100%;height:100%;overflow:visible}
+
+  .ring{
+    fill:none;stroke:var(--emerald);stroke-width:7;stroke-linecap:round;
+    stroke-dasharray:327;stroke-dashoffset:327;
+    filter:drop-shadow(0 0 5px rgba(16,185,129,.55));
+    animation:ring var(--cycle) cubic-bezier(.65,0,.35,1) infinite;
+  }
+  @keyframes ring{0%{stroke-dashoffset:327}45%{stroke-dashoffset:0}88%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:.85}}
+
+  .arrow{
+    fill:none;stroke:url(#goldgrad);stroke-width:8;
+    stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:190;stroke-dashoffset:190;
+    filter:drop-shadow(0 0 6px rgba(59,130,246,.6));
+    animation:arrow var(--cycle) cubic-bezier(.5,0,.2,1) infinite;
+  }
+  @keyframes arrow{0%,12%{stroke-dashoffset:190}55%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+
+  .wifi{
+    fill:none;stroke:var(--gold);stroke-width:7;stroke-linecap:round;
+    transform-origin:66px 78px;filter:drop-shadow(0 0 4px rgba(59,130,246,.5));
+  }
+  .wifi.a1{animation:ping var(--cycle) ease-out infinite;animation-delay:calc(var(--cycle)*.40)}
+  .wifi.a2{animation:ping var(--cycle) ease-out infinite;animation-delay:calc(var(--cycle)*.52)}
+  .wifi.a3{animation:ping var(--cycle) ease-out infinite;animation-delay:calc(var(--cycle)*.64)}
+  @keyframes ping{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+
+  .node{
+    fill:var(--gold);transform-origin:66px 78px;
+    filter:drop-shadow(0 0 7px rgba(59,130,246,.7));
+    animation:node var(--cycle) cubic-bezier(.5,0,.3,1) infinite;
+  }
+  @keyframes node{
+    0%,100%{fill:var(--gold);transform:scale(1);filter:drop-shadow(0 0 5px rgba(59,130,246,.5))}
+    50%{transform:scale(1.05)}
+    70%{fill:var(--emerald);transform:scale(1.14);filter:drop-shadow(0 0 10px rgba(16,185,129,.7))}
+    82%{fill:var(--emerald)}
+    90%{fill:var(--gold);transform:scale(1)}
+  }
+  .letter{fill:var(--navy);font:800 26px/1 'Segoe UI',system-ui,sans-serif;text-anchor:middle;dominant-baseline:central;letter-spacing:-.02em}
+
+  .data{
+    r:5;fill:var(--emerald);filter:drop-shadow(0 0 7px var(--emerald));
+    offset-path:path('M40 124 L98 44');
+    animation:data var(--cycle) cubic-bezier(.55,0,.35,1) infinite;
+  }
+  @keyframes data{0%,20%{offset-distance:0%;opacity:0}30%{opacity:1}60%{offset-distance:100%;opacity:1}66%,100%{offset-distance:100%;opacity:0}}
+
+  .word{
+    position:relative;font-weight:800;font-size:28px;letter-spacing:.18em;
+    color:#fff;display:flex;align-items:center;overflow:hidden;
+  }
+  .word .x{color:var(--gold)}
+  .word::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(100deg, transparent 30%, rgba(96,165,250,.75) 50%, transparent 70%);
+    transform:translateX(-120%);
+    animation:shimmer calc(var(--cycle)*1.6) ease-in-out infinite;
+  }
+  @keyframes shimmer{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+
+  .sub{
+    margin-top:2px;text-align:center;font-size:11px;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--gold);opacity:.7;
+    animation:fade var(--cycle) ease-in-out infinite;
+  }
+  @keyframes fade{0%,100%{opacity:.4}50%{opacity:.85}}
+
+  .track{width:150px;height:3px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.07);margin-top:8px}
+  .track i{
+    display:block;height:100%;width:40%;border-radius:3px;
+    background:linear-gradient(90deg,transparent,var(--gold),var(--emerald),transparent);
+    animation:slide var(--cycle) cubic-bezier(.65,0,.35,1) infinite;
+  }
+  @keyframes slide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .halo,.glow,.ring,.arrow,.wifi,.node,.data,.sub,.track i,.orbit,.word::after{animation:none}
+    .ring,.arrow{stroke-dashoffset:0}.node{fill:var(--gold)}
+    .wifi{opacity:1;transform:scale(1)}.data{opacity:0}.track i{width:100%;transform:none}
+  }
+</style>
+</head>
+<body>
+  <div class="scene">
+    <div class="mark">
+      <div class="halo"></div>
+      <div class="orbit"><span></span><span></span><span></span></div>
+      <div class="orbit rev"><span></span><span></span></div>
+      <div class="glow"></div>
+      <div class="logo">
+        <svg viewBox="0 0 150 150" aria-label="Loading Nexify">
+          <defs>
+            <linearGradient id="goldgrad" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0" stop-color="#2563eb"/>
+              <stop offset="1" stop-color="#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring" cx="72" cy="74" r="52" transform="rotate(-50 72 74)"/>
+          <path class="arrow" d="M40 124 L98 44 M98 44 L78 48 M98 44 L94 66"/>
+          <circle class="data"/>
+          <path class="wifi a1" d="M52 70 A20 20 0 0 1 80 70"/>
+          <path class="wifi a2" d="M45 64 A30 30 0 0 1 87 64"/>
+          <path class="wifi a3" d="M38 58 A40 40 0 0 1 94 58"/>
+          <circle class="node" cx="66" cy="92" r="20"/>
+          <text class="letter" x="66" y="93">N</text>
+        </svg>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="word">NE<span class="x">X</span>IFY</div>
+      <div class="sub">Connecting network</div>
+      <div class="track"><i></i></div>
+    </div>
+  </div>
+</body>
+</html>
