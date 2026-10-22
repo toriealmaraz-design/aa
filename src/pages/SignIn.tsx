@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Zap,
   Mail,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 
 export default function SignIn() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,6 +25,7 @@ export default function SignIn() {
     await new Promise((r) => setTimeout(r, 1600))
     console.log('Sign in:', { email, password })
     setLoading(false)
+    navigate('/dashboard')
   }
 
   return (

@@ -5,7 +5,15 @@ import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
+import ForgotPassword from './pages/ForgotPassword'
+import Pricing from './pages/Pricing'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
+import Checkout from './pages/Checkout'
+import Dashboard from './pages/Dashboard'
+import NotFound from './pages/NotFound'
 import NexifyLoader from './components/NexifyLoader'
+import ScrollToHash from './components/ScrollToHash'
 import './index.css'
 
 function Root() {
@@ -24,11 +32,19 @@ function Root() {
 
   return (
     <BrowserRouter>
+      <ScrollToHash />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/pay/:shop" element={<Checkout />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
