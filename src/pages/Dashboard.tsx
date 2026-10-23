@@ -1,33 +1,33 @@
 import { useState } from 'react'
 import {
-  Wallet,
+  Wallet as WalletIcon,
+  Database,
   TrendingUp,
-  ShoppingBag,
-  Users,
+  CheckCircle2,
   ArrowUpRight,
   ArrowDownLeft,
   Copy,
   Check,
   ExternalLink,
   Plus,
+  Bell,
+  History,
+  Link2,
+  ArrowLeftRight,
+  Tag,
+  Users,
+  UserCircle,
+  Share2,
 } from 'lucide-react'
 import DashboardLayout, { DashTab } from '../components/DashboardLayout'
+import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from '../lib/store'
 
-/* ---------- mock data ---------- */
-const stats = [
-  { label: 'Wallet Balance', value: 'GH₵1,284.50', icon: <Wallet size={20} />, tone: 'text-green-400 bg-green-500/15' },
-  { label: "Today's Sales", value: 'GH₵340.00', icon: <TrendingUp size={20} />, tone: 'text-blue-400 bg-blue-500/15' },
-  { label: 'Total Orders', value: '1,920', icon: <ShoppingBag size={20} />, tone: 'text-purple-400 bg-purple-500/15' },
-  { label: 'Customers', value: '612', icon: <Users size={20} />, tone: 'text-amber-400 bg-amber-500/15' },
-]
-
-const orders = [
-  { id: 'NX-10492', customer: '024 •••• 231', bundle: 'MTN 5GB', amount: 25, status: 'Delivered', date: '2m ago' },
-  { id: 'NX-10491', customer: '055 •••• 887', bundle: 'Telecel 1GB', amount: 5, status: 'Delivered', date: '14m ago' },
-  { id: 'NX-10490', customer: '020 •••• 014', bundle: 'AirtelTigo 2GB', amount: 10, status: 'Processing', date: '31m ago' },
-  { id: 'NX-10489', customer: '024 •••• 556', bundle: 'MTN 10GB', amount: 46, status: 'Delivered', date: '1h ago' },
-  { id: 'NX-10488', customer: '059 •••• 773', bundle: 'MTN 1GB', amount: 6, status: 'Failed', date: '2h ago' },
-]
+/* ---------- derived mock figures ---------- */
+const orders = MOCK_ORDERS
+const todaySales = VENDOR_STATS.todaySales
+const todayOrders = orders.length
+const todaySuccessful = orders.filter((o) => o.status === 'Delivered').length
+const todayCommission = 'GH₵48.50'
 
 const products = [
   { network: 'MTN', size: '1GB', wholesale: 5.2, price: 6, active: true },
@@ -50,9 +50,9 @@ function statusClasses(s: string) {
 }
 
 export default function Dashboard() {
-  const [tab, setTab] = useState<DashTab>('overview')
+  const [tab, setTab] = useState<DashTab>('home')
   const [copied, setCopied] = useState(false)
-  const shopLink = 'nexify.app/pay/kofi-data'
+  const shopLink = VENDOR.shopLink
 
   const copy = () => {
     navigator.clipboard?.writeText(`https://${shopLink}`)
@@ -60,79 +60,157 @@ export default function Dashboard() {
     setTimeout(() => setCopied(false), 1500)
   }
 
+  const activity = [
+    { label: "Today's sales", value: todaySales, icon: <WalletIcon size={20} />, tone: 'text-amber-400 bg-amber-500/15' },
+    { label: "Today's orders", value: String(todayOrders), icon: <Database size={20} />, tone: 'text-blue-400 bg-blue-500/15' },
+    { label: "Today's total commission", value: todayCommission, icon: <TrendingUp size={20} />, tone: 'text-emerald-400 bg-emerald-500/15' },
+    { label: "Today's successful orders", value: String(todaySuccessful), icon: <CheckCircle2 size={20} />, tone: 'text-purple-400 bg-purple-500/15' },
+  ]
+
+  const quickActions: { label: string; icon: React.ReactNode; tone: string; go: DashTab }[] = [
+    { label: 'History', icon: <History size={22} />, tone: 'bg-blue-500/15 text-blue-400', go: 'sales' },
+    { label: 'Link', icon: <Link2 size={22} />, tone: 'bg-emerald-500/15 text-emerald-400', go: 'links' },
+    { label: 'Transactions', icon: <ArrowLeftRight size={22} />, tone: 'bg-purple-500/15 text-purple-400', go: 'transactions' },
+    { label: 'Prices', icon: <Tag size={22} />, tone: 'bg-amber-500/15 text-amber-400', go: 'prices' },
+    { label: 'Sub Agents', icon: <Users size={22} />, tone: 'bg-cyan-500/15 text-cyan-400', go: 'subagents' },
+    { label: 'Profile', icon: <UserCircle size={22} />, tone: 'bg-pink-500/15 text-pink-400', go: 'profile' },
+  ]
+
   return (
     <DashboardLayout active={tab} onChange={setTab}>
-      {tab === 'overview' && (
+      {/* ───────────────── HOME ───────────────── */}
+      {tab === 'home' && (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Overview</h1>
-            <p className="text-slate-400 text-sm">Here's how your shop is doing.</p>
-          </div>
-
-          {/* Shop link banner */}
-          <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-slate-400 text-sm mb-1">Your shop link</p>
-              <p className="text-white font-medium">{shopLink}</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={copy} className="btn-secondary text-sm px-4 py-2">
-                {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
-                {copied ? 'Copied' : 'Copy'}
-              </button>
-              <a href={`https://${shopLink}`} className="btn-primary text-sm px-4 py-2">
-                <ExternalLink size={16} /> Visit
-              </a>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((s) => (
-              <div key={s.label} className="card">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.tone}`}>{s.icon}</div>
-                <div className="text-2xl font-bold text-white">{s.value}</div>
-                <div className="text-slate-400 text-sm">{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Recent orders */}
+          {/* Available balance (overlaps the header) */}
           <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
-              <button onClick={() => setTab('orders')} className="text-blue-400 text-sm hover:text-blue-300">
-                View all
+            <p className="text-slate-400 text-sm mb-1">Available Balance</p>
+            <div className="flex items-center justify-between">
+              <p className="text-4xl font-bold text-white">{VENDOR_STATS.walletBalance}</p>
+              <button onClick={() => setTab('transactions')} className="text-blue-400 text-sm hover:text-blue-300 flex items-center gap-1">
+                Refresh
               </button>
             </div>
-            <OrdersTable rows={orders.slice(0, 4)} />
+            <button onClick={() => setTab('wallet')} className="btn-primary w-full justify-center py-3.5 mt-5">
+              <WalletIcon size={18} /> Withdraw
+            </button>
+            <button onClick={() => setTab('transactions')} className="w-full text-center text-blue-400 text-sm hover:text-blue-300 mt-3">
+              View withdrawal history →
+            </button>
+          </div>
+
+          {/* Push notifications */}
+          <div className="card flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-none">
+              <Bell size={20} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold">Enable push notifications</h3>
+              <p className="text-slate-400 text-sm mb-3">
+                Get alerted instantly when you earn a sale or commission, even when the app is closed.
+              </p>
+              <button className="btn-primary text-sm px-4 py-2">
+                <Bell size={15} /> Turn on notifications
+              </button>
+            </div>
+          </div>
+
+          {/* Today's activity */}
+          <div>
+            <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-3">Today's Activity</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {activity.map((a) => (
+                <div key={a.label} className="card">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${a.tone}`}>{a.icon}</div>
+                  <div className="text-2xl font-bold text-white">{a.value}</div>
+                  <div className="text-slate-400 text-sm">{a.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick actions */}
+          <div>
+            <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-3">Quick Actions</p>
+            <div className="grid grid-cols-3 gap-4">
+              {quickActions.map((q) => (
+                <button
+                  key={q.label}
+                  onClick={() => setTab(q.go)}
+                  className="card flex flex-col items-center justify-center gap-2 py-5 hover:border-slate-700 transition-colors"
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${q.tone}`}>{q.icon}</div>
+                  <span className="text-slate-300 text-sm font-medium">{q.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {tab === 'orders' && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Orders</h1>
-            <p className="text-slate-400 text-sm">Every bundle sold through your shop.</p>
-          </div>
+      {/* ───────────────── SALES HISTORY ───────────────── */}
+      {tab === 'sales' && (
+        <Panel title="Sales History" subtitle="Every bundle sold through your shop.">
           <div className="card">
             <OrdersTable rows={orders} />
           </div>
-        </div>
+        </Panel>
       )}
 
-      {tab === 'products' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Products</h1>
-              <p className="text-slate-400 text-sm">Set your selling price on each bundle.</p>
-            </div>
-            <button className="btn-primary text-sm px-4 py-2">
-              <Plus size={16} /> Add bundle
-            </button>
+      {/* ───────────────── LINKS ───────────────── */}
+      {tab === 'links' && (
+        <Panel title="Your Links" subtitle="Share these to get paid and grow your team.">
+          <div className="space-y-4">
+            <LinkCard
+              title="Shop payment link"
+              desc="Customers buy data here."
+              value={shopLink}
+              onCopy={copy}
+              copied={copied}
+            />
+            <LinkCard
+              title="Referral link"
+              desc="Earn commission when new vendors join."
+              value={`nexify.app/r/${VENDOR.name.toLowerCase()}`}
+            />
           </div>
+        </Panel>
+      )}
+
+      {/* ───────────────── WALLET ───────────────── */}
+      {tab === 'wallet' && (
+        <Panel title="Wallet" subtitle="Withdraw your earnings to Mobile Money anytime.">
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="card md:col-span-1 bg-gradient-to-br from-blue-600/20 to-slate-900 border-blue-500/20">
+              <p className="text-slate-400 text-sm mb-1">Available balance</p>
+              <p className="text-3xl font-bold text-white mb-6">{VENDOR_STATS.walletBalance}</p>
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-3">
+                <input type="number" placeholder="Amount to withdraw" className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                <input type="tel" placeholder="MoMo number" className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+                <button type="submit" className="btn-primary w-full justify-center py-3">Withdraw <ArrowUpRight size={16} /></button>
+              </form>
+            </div>
+            <div className="card md:col-span-2">
+              <h2 className="text-lg font-semibold text-white mb-4">Recent transactions</h2>
+              <TxnList />
+            </div>
+          </div>
+        </Panel>
+      )}
+
+      {/* ───────────────── TRANSACTIONS ───────────────── */}
+      {tab === 'transactions' && (
+        <Panel title="Transactions" subtitle="Your sales and withdrawals.">
+          <div className="card"><TxnList /></div>
+        </Panel>
+      )}
+
+      {/* ───────────────── PRICES ───────────────── */}
+      {tab === 'prices' && (
+        <Panel
+          title="Prices"
+          subtitle="Set your selling price on each bundle."
+          action={<button className="btn-primary text-sm px-4 py-2"><Plus size={16} /> Add bundle</button>}
+        >
           <div className="card overflow-x-auto">
             <table className="w-full text-sm min-w-[520px]">
               <thead>
@@ -152,7 +230,7 @@ export default function Dashboard() {
                     <td className="py-3 text-slate-300">{p.size}</td>
                     <td className="py-3 text-slate-400">GH₵{p.wholesale.toFixed(2)}</td>
                     <td className="py-3 text-white font-medium">GH₵{p.price.toFixed(2)}</td>
-                    <td className="py-3 text-green-400">GH₵{(p.price - p.wholesale).toFixed(2)}</td>
+                    <td className="py-3 text-emerald-400">GH₵{(p.price - p.wholesale).toFixed(2)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-xs ${p.active ? 'bg-green-500/15 text-green-400' : 'bg-slate-700/50 text-slate-400'}`}>
                         {p.active ? 'Active' : 'Hidden'}
@@ -163,72 +241,77 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Panel>
       )}
 
-      {tab === 'wallet' && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Wallet</h1>
-            <p className="text-slate-400 text-sm">Withdraw your earnings to Mobile Money anytime.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="card md:col-span-1 bg-gradient-to-br from-blue-600/20 to-slate-900 border-blue-500/20">
-              <p className="text-slate-400 text-sm mb-1">Available balance</p>
-              <p className="text-3xl font-bold text-white mb-6">GH₵1,284.50</p>
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="space-y-3"
-              >
-                <input
-                  type="number"
-                  placeholder="Amount to withdraw"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-                <input
-                  type="tel"
-                  placeholder="MoMo number"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-                <button type="submit" className="btn-primary w-full justify-center py-3">
-                  Withdraw <ArrowUpRight size={16} />
-                </button>
-              </form>
-            </div>
-
-            <div className="card md:col-span-2">
-              <h2 className="text-lg font-semibold text-white mb-4">Recent transactions</h2>
-              <div className="space-y-1">
-                {txns.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between py-3 border-b border-slate-800/60 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center ${t.type === 'in' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
-                        {t.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
-                      </div>
-                      <div>
-                        <div className="text-white text-sm font-medium">{t.label}</div>
-                        <div className="text-slate-500 text-xs">{t.date}</div>
-                      </div>
-                    </div>
-                    <div className={`text-sm font-semibold ${t.type === 'in' ? 'text-green-400' : 'text-red-400'}`}>
-                      {t.type === 'in' ? '+' : '−'}GH₵{t.amount.toFixed(2)}
-                    </div>
-                  </div>
-                ))}
+      {/* ───────────────── REFERRALS ───────────────── */}
+      {tab === 'referrals' && (
+        <Panel title="Referrals" subtitle="Invite other vendors and earn commission on their sales.">
+          <div className="grid sm:grid-cols-3 gap-4 mb-6">
+            {[
+              { label: 'Referred vendors', value: '8' },
+              { label: 'Active this month', value: '5' },
+              { label: 'Referral earnings', value: 'GH₵126.00' },
+            ].map((s) => (
+              <div key={s.label} className="card">
+                <div className="text-2xl font-bold text-white">{s.value}</div>
+                <div className="text-slate-400 text-sm">{s.label}</div>
               </div>
-            </div>
+            ))}
           </div>
-        </div>
+          <LinkCard
+            title="Your referral link"
+            desc="Share it anywhere."
+            value={`nexify.app/r/${VENDOR.name.toLowerCase()}`}
+          />
+        </Panel>
       )}
 
-      {tab === 'shop' && (
-        <div className="space-y-6 max-w-2xl">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Shop Setup</h1>
-            <p className="text-slate-400 text-sm">Customize how customers see your store.</p>
+      {/* ───────────────── SUB AGENTS ───────────────── */}
+      {tab === 'subagents' && (
+        <Panel
+          title="Sub Agents"
+          subtitle="Vendors operating under your account."
+          action={<button className="btn-primary text-sm px-4 py-2"><Plus size={16} /> Add sub agent</button>}
+        >
+          <div className="card divide-y divide-slate-800/60">
+            {[
+              { name: 'Ama Boateng', phone: '024 •••• 118', sales: 'GH₵420' },
+              { name: 'Yaw Mensah', phone: '055 •••• 907', sales: 'GH₵180' },
+            ].map((s) => (
+              <div key={s.name} className="flex items-center justify-between py-3 first:pt-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-sm font-semibold">
+                    {s.name[0]}
+                  </div>
+                  <div>
+                    <div className="text-white text-sm font-medium">{s.name}</div>
+                    <div className="text-slate-500 text-xs">{s.phone}</div>
+                  </div>
+                </div>
+                <div className="text-slate-300 text-sm">{s.sales}</div>
+              </div>
+            ))}
           </div>
-          <form onSubmit={(e) => e.preventDefault()} className="card space-y-5">
+        </Panel>
+      )}
+
+      {/* ───────────────── PROFILE ───────────────── */}
+      {tab === 'profile' && (
+        <Panel title="Profile" subtitle="Your account details.">
+          <form onSubmit={(e) => e.preventDefault()} className="card space-y-5 max-w-2xl">
+            <Field label="Full name" defaultValue={VENDOR.name} />
+            <Field label="Email" defaultValue="kofi@example.com" />
+            <Field label="Phone" defaultValue="024 123 4567" />
+            <button type="submit" className="btn-primary px-6 py-3">Save changes</button>
+          </form>
+        </Panel>
+      )}
+
+      {/* ───────────────── SHOP SETTINGS ───────────────── */}
+      {tab === 'shop' && (
+        <Panel title="Shop Settings" subtitle="Customize how customers see your store.">
+          <form onSubmit={(e) => e.preventDefault()} className="card space-y-5 max-w-2xl">
             <Field label="Shop name" defaultValue="Kofi Data" />
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Shop link</label>
@@ -248,9 +331,26 @@ export default function Dashboard() {
             <Field label="Withdrawal MoMo number" defaultValue="024 123 4567" />
             <button type="submit" className="btn-primary px-6 py-3">Save changes</button>
           </form>
-        </div>
+        </Panel>
       )}
     </DashboardLayout>
+  )
+}
+
+/* ---------- helpers ---------- */
+
+function Panel({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">{title}</h1>
+          {subtitle && <p className="text-slate-400 text-sm">{subtitle}</p>}
+        </div>
+        {action}
+      </div>
+      {children}
+    </div>
   )
 }
 
@@ -283,6 +383,55 @@ function OrdersTable({ rows }: { rows: typeof orders }) {
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function TxnList() {
+  return (
+    <div className="space-y-1">
+      {txns.map((t, i) => (
+        <div key={i} className="flex items-center justify-between py-3 border-b border-slate-800/60 last:border-0">
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center ${t.type === 'in' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
+              {t.type === 'in' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
+            </div>
+            <div>
+              <div className="text-white text-sm font-medium">{t.label}</div>
+              <div className="text-slate-500 text-xs">{t.date}</div>
+            </div>
+          </div>
+          <div className={`text-sm font-semibold ${t.type === 'in' ? 'text-green-400' : 'text-red-400'}`}>
+            {t.type === 'in' ? '+' : '−'}GH₵{t.amount.toFixed(2)}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LinkCard({ title, desc, value, onCopy, copied }: { title: string; desc: string; value: string; onCopy?: () => void; copied?: boolean }) {
+  return (
+    <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 text-white font-medium">
+          <Share2 size={15} className="text-blue-400" /> {title}
+        </div>
+        <p className="text-slate-500 text-xs mb-1">{desc}</p>
+        <p className="text-slate-300 text-sm truncate">{value}</p>
+      </div>
+      <div className="flex gap-2 flex-none">
+        <button
+          onClick={() => (onCopy ? onCopy() : navigator.clipboard?.writeText(`https://${value}`))}
+          className="btn-secondary text-sm px-4 py-2"
+        >
+          {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+        <a href={`https://${value}`} className="btn-primary text-sm px-4 py-2">
+          <ExternalLink size={16} /> Open
+        </a>
+      </div>
     </div>
   )
 }
