@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Zap,
@@ -13,9 +13,11 @@ import {
 } from 'lucide-react'
 import {
   loadNetworks,
-  saveNetworks,
   loadResponses,
-  saveResponses,
+  fetchNetworks,
+  fetchResponses,
+  saveNetworksDB,
+  saveResponsesDB,
   DEFAULT_NETWORKS,
   DEFAULT_RESPONSES,
   type NetworkBadge,
@@ -29,6 +31,12 @@ export default function Admin() {
   const [responses, setResponses] = useState<ArionResponse[]>(() => loadResponses())
   const [networks, setNetworks] = useState<NetworkBadge[]>(() => loadNetworks())
   const [saved, setSaved] = useState<'' | 'arion' | 'badges'>('')
+
+  // Hydrate from Supabase (falls back to the seed defaults shown instantly)
+  useEffect(() => {
+    fetchResponses().then(setResponses)
+    fetchNetworks().then(setNetworks)
+  }, [])
 
   const flashSaved = (which: 'arion' | 'badges') => {
     setSaved(which)
@@ -45,7 +53,7 @@ export default function Admin() {
     ])
   const removeResponse = (id: string) => setResponses((rs) => rs.filter((r) => r.id !== id))
   const saveArion = () => {
-    saveResponses(responses)
+    saveResponsesDB(responses)
     flashSaved('arion')
   }
 
@@ -53,7 +61,7 @@ export default function Admin() {
   const updateNetwork = (id: string, patch: Partial<NetworkBadge>) =>
     setNetworks((ns) => ns.map((n) => (n.id === id ? { ...n, ...patch } : n)))
   const saveBadges = () => {
-    saveNetworks(networks)
+    saveNetworksDB(networks)
     flashSaved('badges')
   }
 

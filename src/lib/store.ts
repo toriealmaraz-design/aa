@@ -8,6 +8,8 @@
  * the component APIs stay the same.
  */
 
+import { supabase, hasSupabase } from './supabase'
+
 export interface NetworkBadge {
   id: string
   name: string // must match bundle keys (MTN, Telecel, AirtelTigo)
@@ -171,4 +173,95 @@ export function matchResponse(message: string, responses: ArionResponse[]): Ario
     if (score > 0 && (!best || score > best.score)) best = { r, score }
   }
   return best ? best.r : null
+}
+
+/* ───────────────────────── Supabase data layer ─────────────────────────
+ * Async fetchers hydrate the UI from the database; every one falls back to
+ * the seed defaults when Supabase isn't configured or a query fails, so the
+ * app always renders. DB savers mirror to localStorage too.
+ */
+
+function rel(ts: string): string {
+  const diff = Date.now() - new Date(ts).getTime()
+  const m = Math.max(0, Math.round(diff / 60000))
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.round(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.round(h / 24)}d ago`
+}
+
+export async function fetchNetworks(): Promise<NetworkBadge[]> {
+  if (!hasSupabase) return loadNetworks()
+  const { data, error } = await supabase.from('networks').select('*').order('sort')
+  if (error || !data || !data.length) return loadNetworks()
+  return data.map((r: any) => ({
+    id: r.id, name: r.name, code: r.code, color: r.color, textDark: r.text_dark, active: r.active,
+  }))
+}
+
+export async function fetchResponses(): Promise<ArionResponse[]> {
+  if (!hasSupabase) return loadResponses()
+  const { data, error } = await supabase.from('arion_responses').select('*').order('sort')
+  if (error || !data || !data.length) return loadResponses()
+  return data.map((r: any) => ({ id: r.id, title: r.title, keywords: r.keywords || [], reply: r.reply }))
+}
+
+/** Bundles grouped by network NAME, e.g. { MTN: [{size,validity,price}], ... }. */
+export async function fetchBundles(): Promise<Record<string, { size: string; validity: string; price: number }[]> | null> {
+  if (!hasSupabase) return null
+  const [nets, bundles] = await Promise.all([
+    supabase.from('networks').select('id,name'),
+    supabase.from('bundles').select('*').eq('active', true),
+  ])
+  if (nets.error || bundles.error || !bundles.data?.length) return null
+  const nameById: Record<string, string> = {}
+  ;(nets.data || []).forEach((n: any) => (nameById[n.id] = n.name))
+  const grouped: Record<string, { size: string; validity: string; price: number }[]> = {}
+  bundles.data.forEach((b: any) => {
+    const name = nameById[b.network_id]
+    if (!name) return
+    ;(grouped[name] ||= []).push({ size: b.size, validity: b.validity, price: Number(b.price) })
+  })
+  return grouped
+}
+
+export async function fetchOrders(): Promise<MockOrder[]> {
+  if (!hasSupabase) return MOCK_ORDERS
+  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+  if (error || !data || !data.length) return MOCK_ORDERS
+  return data.map((r: any) => ({
+    id: r.id,
+    customer: r.customer_phone || '',
+    bundle: `${r.network} ${r.bundle_size}`,
+    network: r.network,
+    amount: Number(r.amount),
+    status: r.status,
+    date: rel(r.created_at),
+  }))
+}
+
+export async function fetchVendor(): Promise<{ name: string; walletBalance: number } | null> {
+  if (!hasSupabase) return null
+  const { data, error } = await supabase.from('vendors').select('*').limit(1).maybeSingle()
+  if (error || !data) return null
+  return { name: data.name, walletBalance: Number(data.wallet_balance) }
+}
+
+export async function saveNetworksDB(networks: NetworkBadge[]): Promise<void> {
+  saveNetworks(networks)
+  if (!hasSupabase) return
+  await supabase.from('networks').upsert(
+    networks.map((n, i) => ({
+      id: n.id, name: n.name, code: n.code, color: n.color, text_dark: n.textDark, active: n.active, sort: i + 1,
+    })),
+  )
+}
+
+export async function saveResponsesDB(responses: ArionResponse[]): Promise<void> {
+  saveResponses(responses)
+  if (!hasSupabase) return
+  await supabase.from('arion_responses').upsert(
+    responses.map((r, i) => ({ id: r.id, title: r.title, keywords: r.keywords, reply: r.reply, sort: i + 1 })),
+  )
 }

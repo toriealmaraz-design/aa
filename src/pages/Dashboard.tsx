@@ -20,17 +20,15 @@ import {
   Share2,
 } from 'lucide-react'
 import DashboardLayout, { DashTab } from '../components/DashboardLayout'
-import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from '../lib/store'
+import { VENDOR, VENDOR_STATS, MOCK_ORDERS, fetchOrders, fetchVendor, type MockOrder } from '../lib/store'
 import { useCountUp, cedis } from '../hooks/useCountUp'
 import { toast } from '../components/Toast'
+import { useEffect } from 'react'
 
 const balanceNum = parseFloat(VENDOR_STATS.walletBalance.replace(/[^0-9.]/g, '')) || 0
 
 /* ---------- derived mock figures ---------- */
-const orders = MOCK_ORDERS
 const todaySales = VENDOR_STATS.todaySales
-const todayOrders = orders.length
-const todaySuccessful = orders.filter((o) => o.status === 'Delivered').length
 const todayCommission = 'GH₵48.50'
 
 const products = [
@@ -57,7 +55,19 @@ export default function Dashboard() {
   const [tab, setTab] = useState<DashTab>('home')
   const [copied, setCopied] = useState(false)
   const shopLink = VENDOR.shopLink
-  const balance = useCountUp(balanceNum)
+
+  // Live data from Supabase (seed values show instantly, then hydrate)
+  const [orders, setOrders] = useState<MockOrder[]>(MOCK_ORDERS)
+  const [balanceTarget, setBalanceTarget] = useState(balanceNum)
+  const balance = useCountUp(balanceTarget)
+
+  useEffect(() => {
+    fetchOrders().then(setOrders)
+    fetchVendor().then((v) => v && setBalanceTarget(v.walletBalance))
+  }, [])
+
+  const todayOrders = orders.length
+  const todaySuccessful = orders.filter((o) => o.status === 'Delivered').length
 
   const copy = () => {
     navigator.clipboard?.writeText(`https://${shopLink}`)
@@ -360,7 +370,7 @@ function Panel({ title, subtitle, action, children }: { title: string; subtitle?
   )
 }
 
-function OrdersTable({ rows }: { rows: typeof orders }) {
+function OrdersTable({ rows }: { rows: MockOrder[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm min-w-[520px]">

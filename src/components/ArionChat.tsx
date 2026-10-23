@@ -4,6 +4,7 @@ import {
   loadResponses,
   findOrder,
   matchResponse,
+  fetchResponses,
   type ArionResponse,
   type MockOrder,
   type VendorStats,
@@ -46,9 +47,9 @@ export default function ArionChat({ context = { scope: 'public' } }: { context?:
   const [responses, setResponses] = useState<ArionResponse[]>([])
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  // (Re)load editable responses whenever the panel opens — picks up admin edits.
+  // (Re)load editable responses whenever the panel opens — picks up admin/DB edits.
   useEffect(() => {
-    if (open) setResponses(loadResponses())
+    if (open) fetchResponses().then(setResponses)
   }, [open])
 
   useEffect(() => {

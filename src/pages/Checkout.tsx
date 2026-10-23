@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Zap,
@@ -9,7 +9,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react'
-import { loadNetworks } from '../lib/store'
+import { loadNetworks, fetchNetworks, fetchBundles } from '../lib/store'
 
 type Network = 'MTN' | 'Telecel' | 'AirtelTigo'
 
@@ -54,14 +54,21 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
-  // Network badges come from the admin-editable store; only show active ones
-  // whose name maps to a known bundle set.
-  const badges = useMemo(
-    () => loadNetworks().filter((n) => n.active && n.name in BUNDLES),
-    [],
-  )
+  // Network badges + bundles hydrate from Supabase; seed data shows instantly.
+  const [badges, setBadges] = useState(() => loadNetworks().filter((n) => n.active && n.name in BUNDLES))
+  const [bundleMap, setBundleMap] = useState<Record<string, Bundle[]>>(BUNDLES)
 
-  const bundles = useMemo(() => BUNDLES[network], [network])
+  useEffect(() => {
+    fetchBundles().then((b) => {
+      if (b) setBundleMap((prev) => ({ ...prev, ...b }))
+    })
+    fetchNetworks().then((ns) => {
+      const active = ns.filter((n) => n.active)
+      if (active.length) setBadges(active)
+    })
+  }, [])
+
+  const bundles = useMemo(() => bundleMap[network] || [], [bundleMap, network])
   const canPay = bundle && recipient.trim().length >= 9 && payNumber.trim().length >= 9
 
   const handlePay = async (e: React.FormEvent) => {
