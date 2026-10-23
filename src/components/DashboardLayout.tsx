@@ -59,7 +59,13 @@ export default function DashboardLayout({ active, onChange, children }: Props) {
           </button>
         ))}
       </nav>
-      <div className="px-3 py-4 border-t border-slate-800">
+      <div className="px-3 py-4 border-t border-slate-800 space-y-1">
+        <Link
+          to="/admin"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+        >
+          <Store size={18} /> Admin Panel
+        </Link>
         <Link
           to="/signin"
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"

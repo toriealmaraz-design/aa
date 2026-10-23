@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react'
+import { loadNetworks } from '../lib/store'
 
 type Network = 'MTN' | 'Telecel' | 'AirtelTigo'
 
@@ -17,12 +18,6 @@ interface Bundle {
   validity: string
   price: number
 }
-
-const NETWORKS: { id: Network; color: string; label: string }[] = [
-  { id: 'MTN', color: 'bg-yellow-400 text-slate-900', label: 'MTN' },
-  { id: 'Telecel', color: 'bg-red-500 text-white', label: 'Telecel' },
-  { id: 'AirtelTigo', color: 'bg-blue-500 text-white', label: 'AirtelTigo' },
-]
 
 const BUNDLES: Record<Network, Bundle[]> = {
   MTN: [
@@ -58,6 +53,13 @@ export default function Checkout() {
   const [payNumber, setPayNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+
+  // Network badges come from the admin-editable store; only show active ones
+  // whose name maps to a known bundle set.
+  const badges = useMemo(
+    () => loadNetworks().filter((n) => n.active && n.name in BUNDLES),
+    [],
+  )
 
   const bundles = useMemo(() => BUNDLES[network], [network])
   const canPay = bundle && recipient.trim().length >= 9 && payNumber.trim().length >= 9
@@ -129,24 +131,27 @@ export default function Checkout() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">Select network</label>
             <div className="grid grid-cols-3 gap-2">
-              {NETWORKS.map((n) => (
+              {badges.map((n) => (
                 <button
                   key={n.id}
                   type="button"
                   onClick={() => {
-                    setNetwork(n.id)
+                    setNetwork(n.name as Network)
                     setBundle(null)
                   }}
                   className={`rounded-xl py-3 text-sm font-semibold border transition-colors ${
-                    network === n.id
+                    network === n.name
                       ? 'border-blue-500 bg-blue-600/10 text-white'
                       : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span className={`inline-block w-6 h-6 rounded-full ${n.color} text-[10px] leading-6 mb-1`}>
-                    {n.label[0]}
+                  <span
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold mb-1"
+                    style={{ background: n.color, color: n.textDark ? '#0f172a' : '#fff' }}
+                  >
+                    {n.code}
                   </span>
-                  <div>{n.label}</div>
+                  <div>{n.name}</div>
                 </button>
               ))}
             </div>

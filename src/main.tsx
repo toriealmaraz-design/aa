@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import SignIn from './pages/SignIn'
@@ -11,10 +11,19 @@ import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Checkout from './pages/Checkout'
 import Dashboard from './pages/Dashboard'
+import Admin from './pages/Admin'
 import NotFound from './pages/NotFound'
 import NexifyLoader from './components/NexifyLoader'
 import ScrollToHash from './components/ScrollToHash'
+import ArionChat from './components/ArionChat'
 import './index.css'
+
+// Arion shows on public-facing pages, not inside the admin/dashboard apps.
+function ArionGate() {
+  const { pathname } = useLocation()
+  const hidden = pathname.startsWith('/admin') || pathname.startsWith('/dashboard')
+  return hidden ? null : <ArionChat />
+}
 
 function Root() {
   const [booting, setBooting] = useState(true)
@@ -43,9 +52,11 @@ function Root() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/pay/:shop" element={<Checkout />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <ArionGate />
     </BrowserRouter>
   )
 }
