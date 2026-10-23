@@ -32,7 +32,7 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative">
-          <div className="text-center max-w-4xl mx-auto">
+          <div className="text-center max-w-4xl mx-auto animate-in">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 rounded-full px-4 py-2 mb-8">
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
@@ -415,7 +415,7 @@ function FeatureCard({ icon, iconBg, title, description }: {
   description: string
 }) {
   return (
-    <div className="card hover:border-slate-700 transition-colors">
+    <div className="card card-hover">
       <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center mb-4`}>
         {icon}
       </div>

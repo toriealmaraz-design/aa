@@ -47,3 +47,66 @@
 @media (prefers-reduced-motion: reduce) {
   .nx-btn-spinner { animation-duration: 1.4s; }
 }
+
+/* ───────────────────────── Themed browser surfaces ───────────────────────── */
+::selection { background: rgba(59, 130, 246, 0.35); color: #fff; }
+html { accent-color: #3B82F6; }
+
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: #1e293b; border-radius: 999px; border: 2px solid transparent; background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: #334155; background-clip: content-box; }
+* { scrollbar-width: thin; scrollbar-color: #1e293b transparent; }
+
+:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.7);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Tabular figures for money / stats so columns don't jitter */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ───────────────────────── Motion system ───────────────────────── */
+/* One authored entrance; exponential ease-out from an already-sensible default. */
+@keyframes nx-enter {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+.animate-in {
+  animation: nx-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Optional stagger: set style={{ '--d': '60ms' }} on children */
+.stagger > * { animation: nx-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ───────────────────────── Micro-interactions ───────────────────────── */
+@layer components {
+  .btn-primary, .btn-secondary {
+    transition: background-color .18s, transform .12s, box-shadow .18s;
+  }
+  .btn-primary:active, .btn-secondary:active { transform: translateY(1px) scale(0.99); }
+  .btn-primary:hover { box-shadow: 0 8px 22px -8px rgba(59, 130, 246, 0.6); }
+}
+/* Card lift — real depth: offset + soft blur */
+.card {
+  transition: transform .2s cubic-bezier(0.16,1,0.3,1), border-color .2s, box-shadow .2s;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: #334155;
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in, .stagger > * { animation: none; }
+  .card-hover:hover { transform: none; }
+  .btn-primary:active, .btn-secondary:active { transform: none; }
+}

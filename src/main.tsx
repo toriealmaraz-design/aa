@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound'
 import NexifyLoader from './components/NexifyLoader'
 import ScrollToHash from './components/ScrollToHash'
 import ArionChat from './components/ArionChat'
+import { ToastHost } from './components/Toast'
 import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from './lib/store'
 import './index.css'
 
@@ -69,6 +70,7 @@ function Root() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ArionGate />
+      <ToastHost />
     </BrowserRouter>
   )
 }

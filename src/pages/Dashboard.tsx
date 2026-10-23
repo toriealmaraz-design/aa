@@ -21,6 +21,10 @@ import {
 } from 'lucide-react'
 import DashboardLayout, { DashTab } from '../components/DashboardLayout'
 import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from '../lib/store'
+import { useCountUp, cedis } from '../hooks/useCountUp'
+import { toast } from '../components/Toast'
+
+const balanceNum = parseFloat(VENDOR_STATS.walletBalance.replace(/[^0-9.]/g, '')) || 0
 
 /* ---------- derived mock figures ---------- */
 const orders = MOCK_ORDERS
@@ -53,10 +57,12 @@ export default function Dashboard() {
   const [tab, setTab] = useState<DashTab>('home')
   const [copied, setCopied] = useState(false)
   const shopLink = VENDOR.shopLink
+  const balance = useCountUp(balanceNum)
 
   const copy = () => {
     navigator.clipboard?.writeText(`https://${shopLink}`)
     setCopied(true)
+    toast('Shop link copied')
     setTimeout(() => setCopied(false), 1500)
   }
 
@@ -80,13 +86,13 @@ export default function Dashboard() {
     <DashboardLayout active={tab} onChange={setTab}>
       {/* ───────────────── HOME ───────────────── */}
       {tab === 'home' && (
-        <div className="space-y-6">
+        <div className="space-y-6 stagger">
           {/* Available balance (overlaps the header) */}
           <div className="card">
             <p className="text-slate-400 text-sm mb-1">Available Balance</p>
             <div className="flex items-center justify-between">
-              <p className="text-4xl font-bold text-white">{VENDOR_STATS.walletBalance}</p>
-              <button onClick={() => setTab('transactions')} className="text-blue-400 text-sm hover:text-blue-300 flex items-center gap-1">
+              <p className="text-4xl font-bold text-white tnum">{cedis(balance)}</p>
+              <button onClick={() => { toast('Balance up to date', 'info') }} className="text-blue-400 text-sm hover:text-blue-300 flex items-center gap-1">
                 Refresh
               </button>
             </div>
@@ -108,7 +114,7 @@ export default function Dashboard() {
               <p className="text-slate-400 text-sm mb-3">
                 Get alerted instantly when you earn a sale or commission, even when the app is closed.
               </p>
-              <button className="btn-primary text-sm px-4 py-2">
+              <button onClick={() => toast('Push notifications enabled', 'info')} className="btn-primary text-sm px-4 py-2">
                 <Bell size={15} /> Turn on notifications
               </button>
             </div>
@@ -119,9 +125,9 @@ export default function Dashboard() {
             <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-3">Today's Activity</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {activity.map((a) => (
-                <div key={a.label} className="card">
+                <div key={a.label} className="card card-hover">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${a.tone}`}>{a.icon}</div>
-                  <div className="text-2xl font-bold text-white">{a.value}</div>
+                  <div className="text-2xl font-bold text-white tnum">{a.value}</div>
                   <div className="text-slate-400 text-sm">{a.label}</div>
                 </div>
               ))}
@@ -136,7 +142,7 @@ export default function Dashboard() {
                 <button
                   key={q.label}
                   onClick={() => setTab(q.go)}
-                  className="card flex flex-col items-center justify-center gap-2 py-5 hover:border-slate-700 transition-colors"
+                  className="card card-hover flex flex-col items-center justify-center gap-2 py-5"
                 >
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${q.tone}`}>{q.icon}</div>
                   <span className="text-slate-300 text-sm font-medium">{q.label}</span>
@@ -183,7 +189,7 @@ export default function Dashboard() {
             <div className="card md:col-span-1 bg-gradient-to-br from-blue-600/20 to-slate-900 border-blue-500/20">
               <p className="text-slate-400 text-sm mb-1">Available balance</p>
               <p className="text-3xl font-bold text-white mb-6">{VENDOR_STATS.walletBalance}</p>
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-3">
+              <form onSubmit={(e) => { e.preventDefault(); toast('Withdrawal requested — approve the MoMo prompt') }} className="space-y-3">
                 <input type="number" placeholder="Amount to withdraw" className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
                 <input type="tel" placeholder="MoMo number" className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
                 <button type="submit" className="btn-primary w-full justify-center py-3">Withdraw <ArrowUpRight size={16} /></button>
@@ -299,7 +305,7 @@ export default function Dashboard() {
       {/* ───────────────── PROFILE ───────────────── */}
       {tab === 'profile' && (
         <Panel title="Profile" subtitle="Your account details.">
-          <form onSubmit={(e) => e.preventDefault()} className="card space-y-5 max-w-2xl">
+          <form onSubmit={(e) => { e.preventDefault(); toast('Changes saved') }} className="card space-y-5 max-w-2xl">
             <Field label="Full name" defaultValue={VENDOR.name} />
             <Field label="Email" defaultValue="kofi@example.com" />
             <Field label="Phone" defaultValue="024 123 4567" />
@@ -311,7 +317,7 @@ export default function Dashboard() {
       {/* ───────────────── SHOP SETTINGS ───────────────── */}
       {tab === 'shop' && (
         <Panel title="Shop Settings" subtitle="Customize how customers see your store.">
-          <form onSubmit={(e) => e.preventDefault()} className="card space-y-5 max-w-2xl">
+          <form onSubmit={(e) => { e.preventDefault(); toast('Changes saved') }} className="card space-y-5 max-w-2xl">
             <Field label="Shop name" defaultValue="Kofi Data" />
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Shop link</label>
@@ -341,7 +347,7 @@ export default function Dashboard() {
 
 function Panel({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">{title}</h1>

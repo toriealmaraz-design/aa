@@ -94,7 +94,7 @@ export default function Pricing() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl p-7 border flex flex-col ${
+              className={`relative rounded-2xl p-7 border flex flex-col card-hover ${
                 plan.highlight
                   ? 'bg-slate-900 border-blue-500/60 shadow-lg shadow-blue-600/10'
                   : 'bg-slate-900/50 border-slate-800'
