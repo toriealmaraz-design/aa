@@ -17,6 +17,9 @@ import NexifyLoader from './components/NexifyLoader'
 import ScrollToHash from './components/ScrollToHash'
 import ArionChat from './components/ArionChat'
 import { ToastHost } from './components/Toast'
+import RequireAuth from './components/RequireAuth'
+import RequireAdmin from './components/RequireAdmin'
+import { AuthProvider } from './lib/auth'
 import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from './lib/store'
 import './index.css'
 
@@ -64,8 +67,8 @@ function Root() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
         <Route path="/pay/:shop" element={<Checkout />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -77,6 +80,8 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Root />
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   </React.StrictMode>,
 )

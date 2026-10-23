@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Home as HomeIcon,
   History,
@@ -12,6 +12,7 @@ import {
   Shield,
 } from 'lucide-react'
 import { VENDOR } from '../lib/store'
+import { useAuth, displayName } from '../lib/auth'
 
 export type DashTab =
   | 'home'
@@ -70,8 +71,16 @@ interface Props {
 }
 
 export default function DashboardLayout({ active, onChange, children }: Props) {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const name = VENDOR.name
+  const resolved = displayName(user)
+  const name = resolved !== 'there' ? resolved : VENDOR.name
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/')
+  }
 
   const Sidebar = (
     <>
@@ -118,12 +127,12 @@ export default function DashboardLayout({ active, onChange, children }: Props) {
         >
           <Shield size={18} /> Admin Panel
         </Link>
-        <Link
-          to="/signin"
+        <button
+          onClick={handleSignOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
         >
           <LogOut size={18} /> Sign out
-        </Link>
+        </button>
       </div>
     </>
   )
@@ -170,9 +179,9 @@ export default function DashboardLayout({ active, onChange, children }: Props) {
               <span className="text-[11px] font-semibold tracking-wider text-white bg-white/15 border border-white/25 px-2.5 py-1 rounded-md">
                 SUBAGENT
               </span>
-              <Link to="/signin" className="text-white/90 hover:text-white" aria-label="Sign out">
+              <button onClick={handleSignOut} className="text-white/90 hover:text-white" aria-label="Sign out">
                 <LogOut size={20} />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
