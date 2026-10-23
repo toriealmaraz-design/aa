@@ -16,13 +16,25 @@ import NotFound from './pages/NotFound'
 import NexifyLoader from './components/NexifyLoader'
 import ScrollToHash from './components/ScrollToHash'
 import ArionChat from './components/ArionChat'
+import { VENDOR, VENDOR_STATS, MOCK_ORDERS } from './lib/store'
 import './index.css'
 
-// Arion shows on public-facing pages, not inside the admin/dashboard apps.
+// Arion shows everywhere except the admin panel. On the vendor dashboard it
+// runs in "vendor" scope with the shop's live orders + stats.
 function ArionGate() {
   const { pathname } = useLocation()
-  const hidden = pathname.startsWith('/admin') || pathname.startsWith('/dashboard')
-  return hidden ? null : <ArionChat />
+  if (pathname.startsWith('/admin')) return null
+  const isVendor = pathname.startsWith('/dashboard')
+  return (
+    <ArionChat
+      key={isVendor ? 'vendor' : 'public'}
+      context={
+        isVendor
+          ? { scope: 'vendor', vendorName: VENDOR.name, orders: MOCK_ORDERS, stats: VENDOR_STATS }
+          : { scope: 'public' }
+      }
+    />
+  )
 }
 
 function Root() {

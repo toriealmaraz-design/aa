@@ -5,6 +5,8 @@ import {
   findOrder,
   matchResponse,
   type ArionResponse,
+  type MockOrder,
+  type VendorStats,
 } from '../lib/store'
 import './ArionChat.css'
 
@@ -13,14 +15,31 @@ interface Msg {
   text: string
 }
 
-const QUICK = ['Track my order', 'How do I buy?', 'Which networks?', 'Talk to support']
+export interface ArionContext {
+  scope: 'public' | 'vendor'
+  vendorName?: string
+  orders?: MockOrder[]
+  stats?: VendorStats
+}
 
-const GREETING =
+const PUBLIC_QUICK = ['Track my order', 'How do I buy?', 'Which networks?', 'Talk to support']
+const VENDOR_QUICK = ['My recent orders', 'How many orders?', 'Wallet balance', "Today's sales"]
+
+const PUBLIC_GREETING =
   "Hi! I'm Arion, your Nexify assistant 🤖 I can track an order or answer questions about data bundles. How can I help?"
 
-export default function ArionChat() {
+function orderLine(o: MockOrder) {
+  return `• ${o.id} · ${o.bundle} · GH₵${o.amount} · ${o.status} (${o.date})`
+}
+
+export default function ArionChat({ context = { scope: 'public' } }: { context?: ArionContext }) {
+  const isVendor = context.scope === 'vendor'
+  const greeting = isVendor
+    ? `Hi ${context.vendorName || 'there'}! I'm Arion 🤖 I can see your shop activity — ask about your recent orders, total sales, or wallet balance.`
+    : PUBLIC_GREETING
+
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Msg[]>([{ from: 'arion', text: GREETING }])
+  const [messages, setMessages] = useState<Msg[]>([{ from: 'arion', text: greeting }])
   const [input, setInput] = useState('')
   const [awaitingOrderId, setAwaitingOrderId] = useState(false)
   const [typing, setTyping] = useState(false)
@@ -44,62 +63,91 @@ export default function ArionChat() {
     }, 450)
   }
 
+  const describeOrder = (o: MockOrder) =>
+    `Order ${o.id} — ${o.bundle} (GH₵${o.amount})\nStatus: ${o.status}\nPlaced: ${o.date}` +
+    (o.status === 'Failed'
+      ? '\n\nThis one failed and was auto-refunded to the payment number.'
+      : o.status === 'Processing'
+      ? '\n\nIt is on the way — usually completes within a minute.'
+      : '\n\nDelivered successfully ✅')
+
   const handle = (raw: string) => {
     const text = raw.trim()
     if (!text) return
     setMessages((m) => [...m, { from: 'user', text }])
     setInput('')
+    const lower = text.toLowerCase()
 
-    // Order-tracking flow
+    // Public-only: step 2 of the "what's your order ID" flow
     if (awaitingOrderId) {
       setAwaitingOrderId(false)
       const order = findOrder(text)
-      if (order) {
-        reply(
-          `Order ${order.id} — ${order.bundle}\nStatus: ${order.status}\nPlaced: ${order.date}` +
-            (order.status === 'Failed'
-              ? '\n\nThis one failed and has been auto-refunded to the payment number.'
-              : order.status === 'Processing'
-              ? '\n\nIt is on the way — usually completes within a minute.'
-              : '\n\nDelivered successfully ✅'),
-        )
-      } else {
-        reply(
-          `I couldn't find an order matching "${text}". Double-check the ID (e.g. NX-10492) or contact support and we'll look into it.`,
-        )
-      }
+      reply(
+        order
+          ? describeOrder(order)
+          : `I couldn't find an order matching "${text}". Double-check the ID (e.g. NX-10492) or contact support.`,
+      )
       return
     }
 
-    const lower = text.toLowerCase()
+    // Vendor stats intents (only when we have the vendor's context)
+    if (isVendor && context.stats) {
+      const s = context.stats
+      if (/wallet|balance|earning|how much.*(made|money|have)/.test(lower)) {
+        reply(`Your wallet balance is ${s.walletBalance}. You can withdraw to Mobile Money anytime from the Wallet tab.`)
+        return
+      }
+      if (/\bsales\b|revenue|today/.test(lower)) {
+        reply(`Today's sales so far: ${s.todaySales}.`)
+        return
+      }
+      if (/how many|number of|total.*order|orders.*(made|have|processed|sold)/.test(lower)) {
+        reply(
+          `You've processed ${s.totalOrders.toLocaleString()} orders in total and served ${s.customers} customers.` +
+            (context.orders?.length ? `\n\nYour most recent:\n${context.orders.slice(0, 3).map(orderLine).join('\n')}` : ''),
+        )
+        return
+      }
+      if (/customer/.test(lower)) {
+        reply(`You've served ${s.customers} customers so far. Keep sharing your shop link to grow that!`)
+        return
+      }
+    }
 
-    // Intent: track order
-    if (/\btrack\b|\border\b|where.*(data|order)|status/.test(lower)) {
+    // Order tracking / recent orders
+    if (/\btrack\b|\border\b|\brecent\b|my orders|where.*(data|order)|status|last order/.test(lower)) {
       const inlineId = text.match(/nx[-\s]?\d+/i)
       if (inlineId) {
-        const order = findOrder(inlineId[0])
-        reply(
-          order
-            ? `Order ${order.id} — ${order.bundle}\nStatus: ${order.status}\nPlaced: ${order.date}`
-            : `I couldn't find "${inlineId[0]}". Please check the order ID.`,
-        )
-      } else {
-        setAwaitingOrderId(true)
-        reply('Sure — what is your order ID? It looks like NX-XXXXX.')
+        const o = findOrder(inlineId[0])
+        reply(o ? describeOrder(o) : `I couldn't find "${inlineId[0]}". Please check the order ID.`)
+        return
       }
+      // Vendor: don't ask for an ID — show their recent orders directly
+      if (isVendor && context.orders?.length) {
+        reply(
+          `Here are your most recent orders:\n${context.orders.slice(0, 4).map(orderLine).join('\n')}\n\n` +
+            `Ask me about any order ID for full details.`,
+        )
+        return
+      }
+      // Public: ask for the ID
+      setAwaitingOrderId(true)
+      reply('Sure — what is your order ID? It looks like NX-XXXXX.')
       return
     }
 
-    // Canned responses
+    // Canned responses, then fallback
     const match = matchResponse(text, responses.length ? responses : loadResponses())
-    if (match) {
-      reply(match.reply)
-    } else {
-      reply(
-        "I'm not sure about that one yet. You can ask me to track an order, explain how to buy, list supported networks, or connect you with support.",
-      )
-    }
+    reply(
+      match
+        ? match.reply
+        : isVendor
+        ? "I can help with your orders, sales, wallet balance, or customers. Try 'show my recent orders' or 'what's my balance?'"
+        : "I'm not sure about that one yet. You can ask me to track an order, explain how to buy, list supported networks, or connect you with support.",
+    )
   }
+
+  const quick = isVendor ? VENDOR_QUICK : PUBLIC_QUICK
 
   return (
     <>
@@ -124,7 +172,7 @@ export default function ArionChat() {
               <div>
                 <div className="arion-name">Arion</div>
                 <div className="arion-status">
-                  <span className="arion-online" /> Nexify Assistant
+                  <span className="arion-online" /> {isVendor ? 'Shop Assistant' : 'Nexify Assistant'}
                 </div>
               </div>
             </div>
@@ -158,9 +206,9 @@ export default function ArionChat() {
 
             {messages.length <= 1 && (
               <div className="arion-quick">
-                {QUICK.map((q) => (
+                {quick.map((q) => (
                   <button key={q} onClick={() => handle(q)} className="arion-chip">
-                    {q === 'Track my order' && <Package size={13} />} {q}
+                    {(q === 'Track my order' || q === 'My recent orders') && <Package size={13} />} {q}
                   </button>
                 ))}
               </div>

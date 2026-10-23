@@ -26,10 +26,29 @@ export interface ArionResponse {
 
 export interface MockOrder {
   id: string
+  customer: string
   bundle: string
   network: string
+  amount: number
   status: 'Delivered' | 'Processing' | 'Failed'
   date: string
+}
+
+/** The signed-in vendor (placeholder until auth/DB). */
+export const VENDOR = { name: 'Kofi', shopLink: 'nexify.app/pay/kofi-data' }
+
+export interface VendorStats {
+  walletBalance: string
+  todaySales: string
+  totalOrders: number
+  customers: number
+}
+
+export const VENDOR_STATS: VendorStats = {
+  walletBalance: 'GH₵1,284.50',
+  todaySales: 'GH₵340.00',
+  totalOrders: 1920,
+  customers: 612,
 }
 
 const KEYS = {
@@ -92,10 +111,11 @@ export const DEFAULT_RESPONSES: ArionResponse[] = [
 
 /** Seeded orders Arion can look up (mirrors the dashboard sample). */
 export const MOCK_ORDERS: MockOrder[] = [
-  { id: 'NX-10492', bundle: 'MTN 5GB', network: 'MTN', status: 'Delivered', date: 'Today, 2:14 PM' },
-  { id: 'NX-10491', bundle: 'Telecel 1GB', network: 'Telecel', status: 'Delivered', date: 'Today, 2:00 PM' },
-  { id: 'NX-10490', bundle: 'AirtelTigo 2GB', network: 'AirtelTigo', status: 'Processing', date: 'Today, 1:43 PM' },
-  { id: 'NX-10488', bundle: 'MTN 1GB', network: 'MTN', status: 'Failed', date: 'Today, 12:10 PM' },
+  { id: 'NX-10492', customer: '024 •••• 231', bundle: 'MTN 5GB', network: 'MTN', amount: 25, status: 'Delivered', date: '2m ago' },
+  { id: 'NX-10491', customer: '055 •••• 887', bundle: 'Telecel 1GB', network: 'Telecel', amount: 5, status: 'Delivered', date: '14m ago' },
+  { id: 'NX-10490', customer: '020 •••• 014', bundle: 'AirtelTigo 2GB', network: 'AirtelTigo', amount: 10, status: 'Processing', date: '31m ago' },
+  { id: 'NX-10489', customer: '024 •••• 556', bundle: 'MTN 10GB', network: 'MTN', amount: 46, status: 'Delivered', date: '1h ago' },
+  { id: 'NX-10488', customer: '059 •••• 773', bundle: 'MTN 1GB', network: 'MTN', amount: 6, status: 'Failed', date: '2h ago' },
 ]
 
 /* ----------------------------- helpers ----------------------------- */
